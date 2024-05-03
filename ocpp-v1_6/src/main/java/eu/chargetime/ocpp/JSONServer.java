@@ -61,6 +61,7 @@ public class JSONServer implements IServerAPI {
    * @param configuration network configuration for a json server.
    */
   public JSONServer(ServerCoreProfile coreProfile, JSONConfiguration configuration) {
+    System.out.println("Checking logger class: " + logger.getClass());
     featureRepository = new FeatureRepository();
     SessionFactory sessionFactory = new SessionFactory(featureRepository);
 
