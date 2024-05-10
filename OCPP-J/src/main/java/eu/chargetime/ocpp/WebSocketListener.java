@@ -41,11 +41,13 @@ import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.java_websocket.server.WebSocketServer;
-import org.slf4j.Logger;
+//import org.slf4j.Logger;
+import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WebSocketListener implements Listener {
-  private static final Logger logger = LoggerFactory.getLogger(WebSocketListener.class);
+  //private static final Logger logger = LoggerFactory.getLogger(WebSocketListener.class);
+  private final static Logger logger = Logger.getLogger(WebSocketListener.class.getSimpleName());
 
   private static final int DEFAULT_WEBSOCKET_WORKER_COUNT = 4;
   private static final int TIMEOUT_IN_MILLIS = 10000;
@@ -88,12 +90,12 @@ public class WebSocketListener implements Listener {
           @Override
           public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
             if(Draft_HttpHealthCheck.isHttp(clientHandshake)){
-              logger.debug("On HTTP Request, for heathcheck");
+              logger.info("On HTTP Request, for heathcheck");
               webSocket.close(Draft_HttpHealthCheck.HTTP_HEALTH_CHECK_CLOSE_CODE);
               return;
             }
-            logger.debug(
-                "On connection open (resource descriptor: {})",
+            logger.info(
+                "On connection open (resource descriptor: {}) " +
                 clientHandshake.getResourceDescriptor());
 
             WebSocketReceiver receiver =
@@ -119,9 +121,9 @@ public class WebSocketListener implements Listener {
 
             String proxiedAddress = clientHandshake.getFieldValue(HTTP_HEADER_PROXIED_ADDRESS);
 
-            logger.debug(
-                "New web-socket connection opened from address: {} proxied for: {}",
-                webSocket.getRemoteSocketAddress(),
+            logger.info(
+                "New web-socket connection opened from address: {} proxied for: {} " +
+                webSocket.getRemoteSocketAddress() + " " +
                 proxiedAddress);
 
             SessionInformation information =
@@ -183,11 +185,11 @@ public class WebSocketListener implements Listener {
 
           @Override
           public void onClose(WebSocket webSocket, int code, String reason, boolean remote) {
-            logger.debug(
-                "On connection close (resource descriptor: {}, code: {}, reason: {}, remote: {})",
-                webSocket.getResourceDescriptor(),
-                code,
-                reason,
+            logger.info(
+                "On connection close (resource descriptor: {}, code: {}, reason: {}, remote: {}) " +
+                webSocket.getResourceDescriptor() + " "
+                + code + " " +
+                reason + " " +
                 remote);
 
             if(code == Draft_HttpHealthCheck.HTTP_HEALTH_CHECK_CLOSE_CODE)
@@ -198,7 +200,7 @@ public class WebSocketListener implements Listener {
               receiver.disconnect();
               sockets.remove(webSocket);
             } else {
-              logger.debug("Receiver for socket not found: {}", webSocket);
+              logger.info("Receiver for socket not found: {} " +  webSocket);
             }
           }
 
@@ -215,18 +217,18 @@ public class WebSocketListener implements Listener {
                     : "not defined (webSocket is null)";
 
             if (ex instanceof ConnectException) {
-              logger.error(
-                  "On error (resource descriptor: " + resourceDescriptor + ") triggered caused by:",
+              logger.info(
+                  "On error (resource descriptor: " + resourceDescriptor + ") triggered caused by:" +
                   ex);
             } else {
-              logger.error(
-                  "On error (resource descriptor: " + resourceDescriptor + ") triggered:", ex);
+              logger.info(
+                  "On error (resource descriptor: " + resourceDescriptor + ") triggered:" + ex);
             }
           }
 
           @Override
           public void onStart() {
-            logger.debug("Server socket bound");
+            logger.info("Server socket bound");
           }
         };
 
@@ -270,7 +272,7 @@ public class WebSocketListener implements Listener {
       try {
         server.stop();
       } catch (InterruptedException ex) {
-        logger.error("Failed to close listener", ex);
+        logger.info("Failed to close listener " + ex);
       }
     } finally {
       closed = true;
